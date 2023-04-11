@@ -29,20 +29,6 @@ class PartialParse(object):
         self.buffer: List[str] = sentence.split()
         self.dependencies: List[(str, str)] = []
 
-        ### YOUR CODE HERE (3 Lines)
-        ### Your code should initialize the following fields:
-        ###     self.stack: The current stack represented as a list with the top of the stack as the
-        ###                 last element of the list.
-        ###     self.buffer: The current buffer represented as a list with the first item on the
-        ###                  buffer as the first item of the list
-        ###     self.dependencies: The list of dependencies produced so far. Represented as a list of
-        ###             tuples where each tuple is of the form (head, dependent).
-        ###             Order for this list doesn't matter.
-        ###
-        ### Note: The root token should be represented with the string "ROOT"
-
-        ### END YOUR CODE
-
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
 
@@ -50,27 +36,15 @@ class PartialParse(object):
                                  left-arc, and right-arc transitions. You can assume the provided
                                  transition is a legal transition.
         """
-
         match transition:
             case 'S':
-                if len(self.stack) < 2:
-                    return
-                self.stack.append(self.buffer[-1])
-                self.buffer.re
+                self.stack.append(self.buffer.pop())
             case 'LA':
-                pass
+                self.dependencies.append((self.stack[-1], self.stack[-2]))
+                self.stack.pop(-2)
             case 'RA':
-                pass
-
-        ### YOUR CODE HERE (~7-10 Lines)
-        ### TODO:
-        ###     Implement a single parsing step, i.e. the logic for the following as
-        ###     described in the pdf handout:
-        ###         1. Shift
-        ###         2. Left Arc
-        ###         3. Right Arc
-
-        ### END YOUR CODE
+                self.dependencies.append((self.stack[-2], self.stack[-1]))
+                self.stack.pop()
 
     def parse(self, transitions):
         """Applies the provided transitions to this PartialParse
