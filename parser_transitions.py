@@ -26,7 +26,7 @@ class PartialParse(object):
         self.sentence = sentence
 
         self.stack: List[str] = ['ROOT']
-        self.buffer: List[str] = sentence.split()
+        self.buffer: List[str] = sentence
         self.dependencies: List[(str, str)] = []
 
     def parse_step(self, transition):
@@ -38,7 +38,7 @@ class PartialParse(object):
         """
         match transition:
             case 'S':
-                self.stack.append(self.buffer.pop())
+                self.stack.append(self.buffer.pop(0))
             case 'LA':
                 self.dependencies.append((self.stack[-1], self.stack[-2]))
                 self.stack.pop(-2)
