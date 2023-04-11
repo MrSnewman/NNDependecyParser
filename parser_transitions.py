@@ -32,9 +32,10 @@ class PartialParse(object):
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
 
-        @param transition (str): A string that equals "S", "LA", or "RA" representing the shift,
+        @param transition: A string that equals "S", "LA", or "RA" representing the shift,
                                  left-arc, and right-arc transitions. You can assume the provided
                                  transition is a legal transition.
+        @type transition: str
         """
         match transition:
             case 'S':
@@ -46,12 +47,12 @@ class PartialParse(object):
                 self.dependencies.append((self.stack[-2], self.stack[-1]))
                 self.stack.pop()
 
-    def parse(self, transitions):
+    def parse(self, transitions: List[str]) -> List[(str, str)]:
         """Applies the provided transitions to this PartialParse
 
-        @param transitions (list of str): The list of transitions in the order they should be applied
+        @param transitions: The list of transitions in the order they should be applied
 
-        @return dependencies (list of string tuples): The list of dependencies produced when
+        @returns: dependencies - The list of dependencies produced when
                                                       parsing the sentence. Represented as a list of
                                                       tuples where each tuple is of the form (head, dependent).
         """
@@ -63,22 +64,34 @@ class PartialParse(object):
 def minibatch_parse(sentences, model, batch_size):
     """Parses a list of sentences in minibatches using a model.
 
-    @param sentences (list of list of str): A list of sentences to be parsed
+    @param sentences: List[List[str]] A list of sentences to be parsed
                                             (each sentence is a list of words and each word is of type string)
-    @param model (ParserModel): The model that makes parsing decisions. It is assumed to have a function
+    @param model: ParserModel The model that makes parsing decisions. It is assumed to have a function
                                 model.predict(partial_parses) that takes in a list of PartialParses as input and
                                 returns a list of transitions predicted for each parse. That is, after calling
                                     transitions = model.predict(partial_parses)
                                 transitions[i] will be the next transition to apply to partial_parses[i].
-    @param batch_size (int): The number of PartialParses to include in each minibatch
+    @param batch_size: int The number of PartialParses to include in each minibatch
 
 
-    @return dependencies (list of dependency lists): A list where each element is the dependencies
+    @return dependencies: (list of dependency lists) A list where each element is the dependencies
                                                      list for a parsed sentence. Ordering should be the
                                                      same as in sentences (i.e., dependencies[i] should
                                                      contain the parse for sentences[i]).
     """
     dependencies = []
+
+    partial_parses: List[PartialParse] = [PartialParse(sentence) for sentence in sentences]
+
+    unfinished_parses = partial_parses[:]
+
+    while unfinished_parses:
+        minibatch = unfinished_parses[:batch_size]
+        transitions = model.predict(minibatch)
+        dependencies.append([parse.parse(transitions) for parse in minibatch])
+        unfinished_parses = unfinished_parses[minibatch:]
+
+
 
     ### YOUR CODE HERE (~8-10 Lines)
     ### TODO:
