@@ -49,6 +49,14 @@ class ParserModel(nn.Module):
         self.hidden_size = hidden_size
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
+        w = torch.empty(self.embed_size)
+        self.embed_to_hidden_weight = nn.Parameter(nn.init.xavier_uniform_(w))
+        self.embed_to_hidden_bias = nn.Parameter(nn.init.uniform_(w))
+
+        w = torch.empty(self.hidden_size)
+        self.hidden_to_logits_weight = nn.Parameter(nn.init.xavier_uniform_(w))
+        self.hidden_to_logits_bias = nn.Parameter(nn.init.uniform_(w))
+
         ### YOUR CODE HERE (~8 Lines)
         ### TODO:
         ###     1) Declare `self.embed_to_hidden_weight` and `self.embed_to_hidden_bias` as `nn.Parameter`.
