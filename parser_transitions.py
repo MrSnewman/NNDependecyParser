@@ -26,8 +26,8 @@ class PartialParse(object):
         self.sentence = sentence
 
         self.stack: List[str] = ['ROOT']
-        self.buffer: List[str] = sentence
-        self.dependencies: List[(str, str)] = []
+        self.buffer: List[str] = [word for word in sentence]
+        self.dependencies: List[tuple[str, str]] = []
 
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
@@ -47,7 +47,7 @@ class PartialParse(object):
                 self.dependencies.append((self.stack[-2], self.stack[-1]))
                 self.stack.pop()
 
-    def parse(self, transitions: List[str]) -> List[(str, str)]:
+    def parse(self, transitions: List[str]) -> List[tuple[str, str]]:
         """Applies the provided transitions to this PartialParse
 
         @param transitions: The list of transitions in the order they should be applied
@@ -80,34 +80,19 @@ def minibatch_parse(sentences, model, batch_size):
                                                      contain the parse for sentences[i]).
     """
     dependencies = []
-
     partial_parses: List[PartialParse] = [PartialParse(sentence) for sentence in sentences]
-
     unfinished_parses = partial_parses[:]
 
     while unfinished_parses:
         minibatch = unfinished_parses[:batch_size]
         transitions = model.predict(minibatch)
-        dependencies.append([parse.parse(transitions) for parse in minibatch])
-        unfinished_parses = unfinished_parses[minibatch:]
+        for i in range(batch_size):
+            unfinished_parses[i].parse_step(transitions[i])
+            if len(unfinished_parses[i].buffer) == 0 and len(unfinished_parses[i].stack) == 1:
+                unfinished_parses.pop(i)
 
-
-
-    ### YOUR CODE HERE (~8-10 Lines)
-    ### TODO:
-    ###     Implement the minibatch parse algorithm as described in the pdf handout
-    ###
-    ###     Note: A shallow copy (as denoted in the PDF) can be made with the "=" sign in python, e.g.
-    ###                 unfinished_parses = partial_parses[:].
-    ###             Here `unfinished_parses` is a shallow copy of `partial_parses`.
-    ###             In Python, a shallow copied list like `unfinished_parses` does not contain new instances
-    ###             of the object stored in `partial_parses`. Rather both lists refer to the same objects.
-    ###             In our case, `partial_parses` contains a list of partial parses. `unfinished_parses`
-    ###             contains references to the same objects. Thus, you should NOT use the `del` operator
-    ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
-    ###             is being accessed by `partial_parses` and may cause your code to crash.
-
-    ### END YOUR CODE
+    for parse in partial_parses:
+        dependencies.append(parse.dependencies)
 
     return dependencies
 
