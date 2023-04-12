@@ -15,6 +15,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from tensor_type import Tensor, Tensor2d
+
 
 class ParserModel(nn.Module):
     """ Feedforward neural network with an embedding layer and one hidden layer.
@@ -33,8 +35,9 @@ class ParserModel(nn.Module):
             in other ParserModel methods.
         - For further documentation on "nn.Module" please see https://pytorch.org/docs/stable/nn.html.
     """
+
     def __init__(self, embeddings, n_features=36,
-        hidden_size=200, n_classes=3):
+                 hidden_size=200, n_classes=3):
         """ Initialize the parser model.
 
         @param embeddings (ndarray): word embeddings (num_words, embedding_size)
@@ -49,13 +52,16 @@ class ParserModel(nn.Module):
         self.hidden_size = hidden_size
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
-        w = torch.empty(self.embed_size)
-        self.embed_to_hidden_weight = nn.Parameter(nn.init.xavier_uniform_(w))
-        self.embed_to_hidden_bias = nn.Parameter(nn.init.uniform_(w))
+        self.embed_to_hidden_weight = torch.empty(self.embed_size, self.hidden_size)
+        self.embed_to_hidden_bias = torch.empty(self.embed_size, self.hidden_size)
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight)
+        nn.init.uniform_(self.embed_to_hidden_bias)
 
-        w = torch.empty(self.hidden_size)
-        self.hidden_to_logits_weight = nn.Parameter(nn.init.xavier_uniform_(w))
-        self.hidden_to_logits_bias = nn.Parameter(nn.init.uniform_(w))
+        self.hidden_to_logits_weight = torch.empty(self.hidden_size, self.n_classes)
+        self.hidden_to_logits_bias = torch.empty(self.hidden_size, self.n_classes)
+
+        nn.Parameter(nn.init.xavier_uniform_(self.hidden_to_logits_weight))
+        nn.Parameter(nn.init.uniform_(self.hidden_to_logits_bias))
 
         ### YOUR CODE HERE (~8 Lines)
         ### TODO:
@@ -78,17 +84,19 @@ class ParserModel(nn.Module):
         ###     nn.Parameter: https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html
         ###     Initialization: https://pytorch.org/docs/stable/nn.init.html
 
-
-
         ### END YOUR CODE
 
-    def embedding_lookup(self, w):
+    def embedding_lookup(self, w: Tensor2d):
         """ Utilize `w` to select embeddings from embedding matrix `self.embeddings`
-            @param w (Tensor): input tensor of word indices (batch_size, n_features)
+            @param w: (Tensor) input tensor of word indices (batch_size, n_features)
 
-            @return x (Tensor): tensor of embeddings for words represented in w
+            @return x: (Tensor) tensor of embeddings for words represented in w
                                 (batch_size, n_features * embed_size)
         """
+        x = torch.empty(w.size(dim=0), self.n_features * self.embed_size)
+
+        x = torch.cat(self.embeddings[w], 1)
+        torch.reshape(x, (w.size(dim=0), self.n_features * self.embed_size))
 
         ### YOUR CODE HERE (~1-3 Lines)
         ### TODO:
@@ -104,11 +112,8 @@ class ParserModel(nn.Module):
         ###       (we are asking you to implement that!). Pay attention to tensor shapes
         ###       and reshape if necessary. Make sure you know each tensor's shape before you run the code!
 
-
-
         ### END YOUR CODE
         return x
-
 
     def forward(self, w):
         """ Run the model forward.
@@ -129,6 +134,11 @@ class ParserModel(nn.Module):
         @return logits (Tensor): tensor of predictions (output after applying the layers of the network)
                                  without applying softmax (batch_size, n_classes)
         """
+
+        x = self.embedding_lookup(w)
+        h = nn.ReLU(x @ self.embed_to_hidden_weight + self.embed_to_hidden_bias)
+        logits = h @ self.hidden_to_logits_weight + self.hidden_to_logits_bias
+
         ### YOUR CODE HERE (~3-5 lines)
         ### TODO:
         ###     Complete the forward computation as described in write-up.
@@ -139,8 +149,6 @@ class ParserModel(nn.Module):
         ### Please see the following docs for support:
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html#torch.nn.ReLU
-
-
 
         ### END YOUR CODE
         return logits
@@ -156,11 +164,13 @@ if __name__ == "__main__":
     embeddings = np.zeros((100, 30), dtype=np.float32)
     model = ParserModel(embeddings)
 
+
     def check_embedding():
         inds = torch.randint(0, 100, (4, 36), dtype=torch.long)
         selected = model.embedding_lookup(inds)
         assert np.all(selected.data.numpy() == 0), "The result of embedding lookup: " \
-                                      + repr(selected) + " contains non-zero elements."
+                                                   + repr(selected) + " contains non-zero elements."
+
 
     def check_forward():
         inputs = torch.randint(0, 100, (4, 36), dtype=torch.long)
@@ -168,6 +178,7 @@ if __name__ == "__main__":
         expected_out_shape = (4, 3)
         assert out.shape == expected_out_shape, "The result shape of forward is: " + repr(out.shape) + \
                                                 " which doesn't match expected " + repr(expected_out_shape)
+
 
     if args.embedding:
         check_embedding()
