@@ -93,9 +93,8 @@ class ParserModel(nn.Module):
             @return x: (Tensor) tensor of embeddings for words represented in w
                                 (batch_size, n_features * embed_size)
         """
-        x = torch.empty(w.size(dim=0), self.n_features * self.embed_size)
 
-        x = torch.cat(self.embeddings[w], 1)
+        x = torch.cat([self.embeddings[i] for i in w], 1)
         torch.reshape(x, (w.size(dim=0), self.n_features * self.embed_size))
 
         ### YOUR CODE HERE (~1-3 Lines)
