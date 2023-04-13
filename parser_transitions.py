@@ -98,10 +98,6 @@ def minibatch_parse(sentences, model, batch_size):
             if len(unfinished_parse.buffer) == 0 and len(unfinished_parse.stack) == 1:
                 unfinished_parses.remove(unfinished_parse)
 
-        # for i in range(len(unfinished_parses)):
-        #     if len(unfinished_parses[i].buffer) == 0 and len(unfinished_parses[i].stack) == 1:
-        #         unfinished_parses.pop(i)
-
     for parse in partial_parses:
         dependencies.append(parse.dependencies)
 

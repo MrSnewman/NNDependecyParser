@@ -66,29 +66,6 @@ class ParserModel(nn.Module):
         nn.init.xavier_uniform_(self.hidden_to_logits_weight)
         nn.init.uniform_(self.hidden_to_logits_bias)
 
-        ### YOUR CODE HERE (~8 Lines)
-        ### TODO:
-        ###     1) Declare `self.embed_to_hidden_weight` and `self.embed_to_hidden_bias` as `nn.Parameter`.
-        ###        Initialize weight with the `nn.init.xavier_uniform_` function and bias with `nn.init.uniform_`
-        ###        with default parameters.
-        ###     2) Declare `self.hidden_to_logits_weight` and `self.hidden_to_logits_bias` as `nn.Parameter`.
-        ###        Initialize weight with the `nn.init.xavier_uniform_` function and bias with `nn.init.uniform_`
-        ###        with default parameters.
-        ###
-        ### Note: Trainable variables are declared as `nn.Parameter` which is a commonly used API
-        ###       to include a tensor into a computational graph to support updating w.r.t its gradient.
-        ###       Here, we use Xavier Uniform Initialization for our Weight initialization.
-        ###       It has been shown empirically, that this provides better initial weights
-        ###       for training networks than random uniform initialization.
-        ###       For more details checkout this great blogpost:
-        ###             http://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization
-        ###
-        ### Please see the following docs for support:
-        ###     nn.Parameter: https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html
-        ###     Initialization: https://pytorch.org/docs/stable/nn.init.html
-
-        ### END YOUR CODE
-
     def embedding_lookup(self, w: Tensor2d):
         """ Utilize `w` to select embeddings from embedding matrix `self.embeddings`
             @param w: (Tensor) input tensor of word indices (batch_size, n_features)
@@ -100,21 +77,6 @@ class ParserModel(nn.Module):
         input_embeddings = self.embeddings[w]
         x = input_embeddings.view(input_embeddings.size(0), -1)
 
-        ### YOUR CODE HERE (~1-3 Lines)
-        ### TODO:
-        ###     1) For each index `i` in `w`, select `i`th vector from self.embeddings
-        ###     2) Reshape the tensor if necessary
-        ###
-        ### Note: All embedding vectors are stacked and stored as a matrix. The model receives
-        ###       a list of indices representing a sequence of words, then it calls this lookup
-        ###       function to map indices to sequence of embeddings.
-        ###
-        ###       This problem aims to test your understanding of embedding lookup,
-        ###       so DO NOT use any high level API like nn.Embedding
-        ###       (we are asking you to implement that!). Pay attention to tensor shapes
-        ###       and reshape if necessary. Make sure you know each tensor's shape before you run the code!
-
-        ### END YOUR CODE
         return x
 
     def forward(self, w):
@@ -141,18 +103,6 @@ class ParserModel(nn.Module):
         h = F.relu(x @ self.embed_to_hidden_weight + self.embed_to_hidden_bias)
         logits = h @ self.hidden_to_logits_weight + self.hidden_to_logits_bias
 
-        ### YOUR CODE HERE (~3-5 lines)
-        ### TODO:
-        ###     Complete the forward computation as described in write-up.
-        ###
-        ### Note: We do not apply the softmax to the logits here, because
-        ### the loss function (torch.nn.CrossEntropyLoss) applies it more efficiently.
-        ###
-        ### Please see the following docs for support:
-        ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
-        ###     ReLU: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html#torch.nn.ReLU
-
-        ### END YOUR CODE
         return logits
 
 
