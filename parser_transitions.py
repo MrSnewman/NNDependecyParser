@@ -92,8 +92,14 @@ def minibatch_parse(sentences, model, batch_size):
         transitions = model.predict(minibatch)
         for i in range(len(minibatch)):
             minibatch[i].parse_step(transitions[i])
-            if len(minibatch[i].buffer) == 0 and len(minibatch[i].stack) == 1:
-                unfinished_parses.pop(i)
+
+        for unfinished_parse in unfinished_parses:
+            if len(unfinished_parse.buffer) == 0 and len(unfinished_parse.stack) == 1:
+                unfinished_parses.remove(unfinished_parse)
+
+        # for i in range(len(unfinished_parses)):
+        #     if len(unfinished_parses[i].buffer) == 0 and len(unfinished_parses[i].stack) == 1:
+        #         unfinished_parses.pop(i)
 
     for parse in partial_parses:
         dependencies.append(parse.dependencies)
