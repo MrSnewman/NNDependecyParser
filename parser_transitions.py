@@ -41,9 +41,13 @@ class PartialParse(object):
             case 'S':
                 self.stack.append(self.buffer.pop(0))
             case 'LA':
+                if len(self.stack) < 2:
+                    return
                 self.dependencies.append((self.stack[-1], self.stack[-2]))
                 self.stack.pop(-2)
             case 'RA':
+                if len(self.stack) < 2:
+                    return
                 self.dependencies.append((self.stack[-2], self.stack[-1]))
                 self.stack.pop()
 
