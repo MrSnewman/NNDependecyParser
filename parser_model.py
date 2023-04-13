@@ -60,9 +60,9 @@ class ParserModel(nn.Module):
         nn.init.uniform_(self.embed_to_hidden_bias)
 
         self.hidden_to_logits_weight = \
-            nn.Parameter(torch.empty(self.n_features, self.n_features))
+            nn.Parameter(torch.empty(self.n_classes, self.n_features))
         self.hidden_to_logits_bias = \
-            nn.Parameter(torch.empty(self.n_classesfixe))
+            nn.Parameter(torch.empty(self.n_classes))
         nn.init.xavier_uniform_(self.hidden_to_logits_weight)
         nn.init.uniform_(self.hidden_to_logits_bias)
 
