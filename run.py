@@ -96,9 +96,14 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
 
     for i, (train_x, train_y) in enumerate(minibatches(train_data, batch_size)):
         optimizer.zero_grad()   # remove any baggage in the optimizer
-        loss = 0. # store loss for this batch here
+        loss = 0.  # store loss for this batch here
         train_x = torch.from_numpy(train_x).long().to(parser.device)
         train_y = torch.from_numpy(train_y.nonzero()[1]).long().to(parser.device)
+
+        logits = model(train_x)
+        loss += loss_func(logits, train_y)
+        loss.backward()
+        optimizer.step()
 
         ### YOUR CODE HERE (~4 lines)
         ### TODO:
