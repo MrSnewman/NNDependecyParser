@@ -53,7 +53,7 @@ class ParserModel(nn.Module):
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
         self.embed_to_hidden_weight = \
-            nn.Parameter(torch.empty(self.embed_size, self.n_features))
+            nn.Parameter(torch.empty(self.hidden_size, self.n_features * self.embed_size))
         self.embed_to_hidden_bias = \
             nn.Parameter(torch.empty(self.hidden_size))
         nn.init.xavier_uniform_(self.embed_to_hidden_weight)
@@ -97,8 +97,8 @@ class ParserModel(nn.Module):
                                 (batch_size, n_features * embed_size)
         """
 
-        x = torch.cat([self.embeddings[i] for i in w], 1)
-        torch.reshape(x, (w.size(dim=0), self.n_features * self.embed_size))
+        input_embeddings = self.embeddings[w]
+        x = input_embeddings.view(input_embeddings.size(0), -1)
 
         ### YOUR CODE HERE (~1-3 Lines)
         ### TODO:
