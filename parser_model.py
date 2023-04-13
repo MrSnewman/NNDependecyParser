@@ -52,16 +52,19 @@ class ParserModel(nn.Module):
         self.hidden_size = hidden_size
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
-        self.embed_to_hidden_weight = torch.empty(self.embed_size, self.hidden_size)
-        self.embed_to_hidden_bias = torch.empty(self.embed_size, self.hidden_size)
+        self.embed_to_hidden_weight = \
+            nn.Parameter(torch.empty(self.embed_size, self.n_features))
+        self.embed_to_hidden_bias = \
+            nn.Parameter(torch.empty(self.n_features))
         nn.init.xavier_uniform_(self.embed_to_hidden_weight)
         nn.init.uniform_(self.embed_to_hidden_bias)
 
-        self.hidden_to_logits_weight = torch.empty(self.hidden_size, self.n_classes)
-        self.hidden_to_logits_bias = torch.empty(self.hidden_size, self.n_classes)
-
-        nn.Parameter(nn.init.xavier_uniform_(self.hidden_to_logits_weight))
-        nn.Parameter(nn.init.uniform_(self.hidden_to_logits_bias))
+        self.hidden_to_logits_weight = \
+            nn.Parameter(torch.empty(self.n_features, self.n_features))
+        self.hidden_to_logits_bias = \
+            nn.Parameter(torch.empty(self.n_features))
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+        nn.init.uniform_(self.hidden_to_logits_bias)
 
         ### YOUR CODE HERE (~8 Lines)
         ### TODO:
@@ -135,7 +138,7 @@ class ParserModel(nn.Module):
         """
 
         x = self.embedding_lookup(w)
-        h = nn.ReLU(x @ self.embed_to_hidden_weight + self.embed_to_hidden_bias)
+        h = F.relu(x @ self.embed_to_hidden_weight + self.embed_to_hidden_bias)
         logits = h @ self.hidden_to_logits_weight + self.hidden_to_logits_bias
 
         ### YOUR CODE HERE (~3-5 lines)
