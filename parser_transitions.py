@@ -39,7 +39,8 @@ class PartialParse(object):
         """
         match transition:
             case 'S':
-                self.stack.append(self.buffer.pop(0))
+                if self.buffer:
+                    self.stack.append(self.buffer.pop(0))
             case 'LA':
                 if len(self.stack) < 2:
                     return
