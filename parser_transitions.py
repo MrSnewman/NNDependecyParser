@@ -39,16 +39,11 @@ class PartialParse(object):
         """
         match transition:
             case 'S':
-                if self.buffer:
-                    self.stack.append(self.buffer.pop(0))
+                self.stack.append(self.buffer.pop(0))
             case 'LA':
-                if len(self.stack) < 2:
-                    return
                 self.dependencies.append((self.stack[-1], self.stack[-2]))
                 self.stack.pop(-2)
             case 'RA':
-                if len(self.stack) < 2:
-                    return
                 self.dependencies.append((self.stack[-2], self.stack[-1]))
                 self.stack.pop()
 
@@ -93,10 +88,12 @@ def minibatch_parse(sentences, model, batch_size):
         transitions = model.predict(minibatch)
         for i in range(len(minibatch)):
             minibatch[i].parse_step(transitions[i])
+            if len(minibatch[i].stack) == 1 and len(minibatch[i].buffer) == 0:
+                unfinished_parses.remove(minibatch[i])
 
-        for unfinished_parse in unfinished_parses:
-            if len(unfinished_parse.buffer) == 0 and len(unfinished_parse.stack) == 1:
-                unfinished_parses.remove(unfinished_parse)
+        # for unfinished_parse in unfinished_parses:
+        #     if len(unfinished_parse.buffer) == 0 and len(unfinished_parse.stack) == 1:
+        #         unfinished_parses.remove(unfinished_parse)
 
     for parse in partial_parses:
         dependencies.append(parse.dependencies)

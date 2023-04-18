@@ -30,6 +30,8 @@ args = parser.parse_args()
 # -----------------
 # Primary Functions
 # -----------------
+
+
 def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005):
     """ Train the neural dependency parser.
 
@@ -43,7 +45,7 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
     """
     best_dev_UAS = 0
 
-    optimizer = optim.Adam(parser.model.parameters())
+    optimizer = optim.Adam(parser.model.parameters(), lr)
     loss_func = nn.CrossEntropyLoss()
 
     ### YOUR CODE HERE (~2 lines)
@@ -122,7 +124,7 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
         ### END YOUR CODE
         loss_meter.update(loss.item())
 
-    print ("Average Train Loss: {}".format(loss_meter.avg))
+    print("Average Train Loss: {}".format(loss_meter.avg))
 
     print("Evaluating on dev set",)
     parser.model.eval() # Places model in "eval" mode
